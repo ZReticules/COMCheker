@@ -30,14 +30,13 @@ section ".code" readable writeable executable
 	
 	form myForm dForm1
 	
+	proc_noprologue
 	proc main
 		@call myForm->startNM(NULL)
-		frame
 		.msgLoop:
 			@call myForm->dispatchMessages()
 		test eax, eax
 		jnz .msgLoop
-		endf
 		ret
 	endp
 
