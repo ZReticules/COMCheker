@@ -33,10 +33,11 @@ struct dForm1 DIALOGFORM
 	form subForm 		dForm2
 ends
 
+proc_noprologue
+
 proc btPort_clicked uses rbx, formLp, paramsLp, controlLp
 	virtObj .form dForm1 at rbx
 	mov rbx, rcx
-	frame
 	cmp [.form.subForm.hWnd], NULL
 	je .noActiveForm
 		@call .form.subForm->close()
@@ -48,11 +49,10 @@ proc btPort_clicked uses rbx, formLp, paramsLp, controlLp
 		jmp .return
 	.issetPort:
 	.return:
-	endf
 	lea rcx, [.form.subForm]
 	xor rdx, rdx
+	sub rsp, 20h
 	pop rbx
-	leave
 	jmp dForm1.Table.startNM
 endp
 
@@ -62,7 +62,6 @@ proc comboChanged uses rbx, formLp, paramsLp, controlLp
 		strBuf 	db 1024 dup(?)
 	endl
 	mov rbx, rcx
-	frame
 	@call .form.cbPort->getText(addr strBuf, 1024)
 	test rax, rax
 	jnz .hasText
@@ -84,7 +83,6 @@ proc comboChanged uses rbx, formLp, paramsLp, controlLp
 		@call .form.subForm.comInfo->getPortInfo(COMInfo.service, addr strBuf, 1024)
 		@call .form.edService->setText(addr strBuf)
 	.noText:
-	endf
 	ret
 endp
 
@@ -98,7 +96,6 @@ proc dForm1_Init uses rbx rsi, formLp, paramsLp
 		winHDC dq ?
 	endl
 	mov rbx, rcx
-	frame
 	@call .form->setText("COMCheker")
 	@call WND:getStockIcon(SIID.DRIVERAM)
 	mov [.form.subForm.hIcon], rax
@@ -144,32 +141,31 @@ proc dForm1_Init uses rbx rsi, formLp, paramsLp
 	.noPorts:
 	@call WND:setTimer([.form.hWnd], 1, 100, NULL)
 	mov [.form.timer], rax
-	endf
 	ret
 endp
 
-proc dForm1_Timer uses rbx, formLp, paramsLp
+proc dForm1_Timer uses rbx rsi rdi, formLp, paramsLp
 	virtObj .form:arg dForm1 at rbx
 	locals
-		lsubForm.comInfo 	COMInfo
+		comInfo 	COMInfo
 		comStr 		db 1024 dup (?)
 		comboText 	db 1024 dup (?)
 		cbTextLen	dq ?
 	endl
 	mov rbx, rcx
-	@call lsubForm.comInfo->init()
-	mov ax, [lsubForm.comInfo.countPorts]
+	@call comInfo->init()
+	mov ax, [comInfo.countPorts]
 	cmp ax, [.form.subForm.comInfo.countPorts]
 	je .noUpdate
-		push rsi rdi
-		frame
 		@call .form.cbPort->getText(addr comboText, 1024)
 		mov [cbTextLen], rax
 		@call .form.cbPort->clear()
+		mov rax, [.form.subForm.comInfo.hDevInfoSet]
 		mov rcx, sizeof.COMInfo
-		lea rsi, [lsubForm.comInfo]
+		lea rsi, [comInfo]
 		lea rdi, [.form.subForm.comInfo]
 		rep movsb
+		mov [comInfo.hDevInfoSet], rax
 		cmp [.form.subForm.comInfo.countPorts], 0
 		je .noPorts
 			movzx rsi, [.form.subForm.comInfo.countPorts]
@@ -191,10 +187,11 @@ proc dForm1_Timer uses rbx, formLp, paramsLp
 			.zeroText:
 		.noPorts:
 		@call comboChanged(addr .form)
-		endf
-		pop rdi rsi
 	.noUpdate:
+	@call comInfo->close()
 	ret
 endp
+
+proc_noprologue
 
 ShblDialog dForm1, 0, 0, 125, 137, NONE, WS_VISIBLE or WS_CAPTION or WS_SYSMENU or WS_MINIMIZEBOX or DS_CENTER

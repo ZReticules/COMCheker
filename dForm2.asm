@@ -3,6 +3,7 @@ WM_COMM = WM_USER+5
 struct dForm2 DIALOGFORM
 	WM_INITDIALOG 		event dForm2_Init
 	WM_COMM				event dForm2_ComIn
+	WM_TIMER 			event dform2_Timer
 	hIcon				dq ?
 	comInfo 			COMInfo
 	comIface			COMIface
@@ -12,6 +13,7 @@ struct dForm2 DIALOGFORM
 	oldClose 			dq ?
 	outStatus			db 0
 	o 					OVERLAPPED
+	timer 				dq ?
 	control gpStngs		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", 5, 5, dForm2.btSvParams._rx-dForm2.gpStngs._x+5, dForm2.btSvParams._ry-dForm2.gpStngs._y+5, WS_VISIBLE or BS_GROUPBOX
 	control stGpStngs	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -54,10 +56,27 @@ struct dForm2 DIALOGFORM
  		"", dForm2.edOut._rx+5, dForm2.gpOut._y+5, 55, 12, WS_VISIBLE
 ends
 
-proc dform2_cbBaud_changed uses rbx, formLp, paramsLp, controlLp
-	virtObj .form:arg dForm2 at rbx
-	mov rbx,  rcx
+proc_noprologue
+proc dform2_Timer, formLp, paramsLp
+	virtObj .form:arg dForm2
+	local cxBuf:QWORD
+	mov [cxBuf], rcx
+	@call .form.comIface->updStat()
+	mov rcx, [cxBuf]
+	test rax, rax
+	jnz .noErr
+		add rsp, 28h
+		jmp dForm2.Table.close
+	.noErr:
+	ret
+endp
+
+proc dform2_cbBaud_changed, formLp, paramsLp, controlLp
+	virtObj .form:arg dForm2
+	local cxBuf:QWORD
+	mov [cxBuf], rcx
 	@call .form.cbBaud->getSelected()
+	mov rcx, [cxBuf]
 	mov eax, [.form.baudRates+rax*4]
 	mov [.form.comIface.dcb.BaudRate], eax
 	ret
@@ -65,18 +84,20 @@ endp
 
 proc dform2_cbParity_changed, formLp, paramsLp, controlLp
 	virtObj .form:arg dForm2
-	push rcx
+	local cxBuf:QWORD
+	mov [cxBuf], rcx
 	@call .form.cbParity->getSelected()
-	pop rcx
+	mov rcx, [cxBuf]
 	mov [.form.comIface.dcb.Parity], al
 	ret
 endp
 
 proc dform2_cbByteSize_changed, formLp, paramsLp, controlLp
 	virtObj .form:arg dForm2
-	push rcx
+	local cxBuf:QWORD
+	mov [cxBuf], rcx
 	@call .form.cbByteSize->getSelected()
-	pop rcx
+	mov rcx, [cxBuf]
 	add al, 4
 	mov [.form.comIface.dcb.ByteSize], al
 	ret
@@ -84,9 +105,10 @@ endp
 
 proc dform2_cbStopBits_changed, formLp, paramsLp, controlLp
 	virtObj .form:arg dForm2
-	push rcx
+	local cxBuf:QWORD
+	mov [cxBuf], rcx
 	@call .form.cbStopBits->getSelected()
-	pop rcx
+	mov rcx, [cxBuf]
 	mov [.form.comIface.dcb.StopBits], al
 	ret
 endp
@@ -102,7 +124,6 @@ proc dform2_btOutData_clicked uses rbx r12, formLp, paramsLp
 	virtObj .form:arg dForm2 at rbx
 	.dynMem equ r12
 	local textLen:QWORD
-	frame
 	@call .form.edOut->getTextLen()
 	mov [textLen], rax
 	inc [textLen]
@@ -110,15 +131,12 @@ proc dform2_btOutData_clicked uses rbx r12, formLp, paramsLp
 	mov .dynMem, rax
 	@call .form.edOut->getText(.dynMem, [textLen])
 	dec [textLen]
-	; @call [SuspendThread]([.form.thread])
 	@call .form.comIface->write(.dynMem, [textLen], addr .form.o)
-	; @call [ResumeThread]([.form.thread])
-	endf
 	mov rcx, .dynMem
 	xor rdx, rdx
 	mov r8, MEM_RELEASE
+	add rsp, 28h
 	pop r12 rbx
-	leave
 	jmp [VirtualFree]
 endp
 
@@ -127,7 +145,7 @@ proc dform2_btPauseIn_clicked, formLp, paramsLp, controlLp
 	virtObj .button:arg button at r8
 	xor [.form.outStatus], 1
 	movzx rax, [.form.outStatus]
-	@call button.Table.setText(addr .button, addr .textButton+rax*8)
+	@call .button->setText(addr .textButton+rax*8)
 	ret
 	.textButton:
 		db "Стоп"
@@ -146,17 +164,15 @@ proc dForm2_close uses rbx r12, this, paramsLp
 	.params equ r12
 	mov rbx, rcx
 	mov .params, rdx
-	frame
 	@call [TerminateThread]([.form.thread], 0)
 	@call [CloseHandle]([.form.event])
 	@call .form.comIface->close()
 	@call [SetCommMask]([.form.comIface.handle], 0)
-	endf
 	virtObj .formJump:arg dForm2
 	lea rcx, [.form]
 	mov rdx, .params
+	add rsp, 28h
 	pop r12 rbx
-	leave
 	jmp [.formJump.oldClose]
 	restore .params
 endp
@@ -166,7 +182,6 @@ proc dForm2_ComIn uses rbx r12, formLp, paramsLp
 	virtObj .params:arg params at r12
 	mov rbx, rcx
 	mov r12, rdx
-	frame
 	cmp [.params.lparam], 0
 	jne .noError
 		@call .form->close()
@@ -175,12 +190,11 @@ proc dForm2_ComIn uses rbx r12, formLp, paramsLp
 	jnz .noAdd
 		@call .form.edIn->addText([.params.wparam])
 	.noAdd:
-	endf
 	mov rcx, [.params.wparam]
 	xor rdx, rdx
 	mov r8, MEM_RELEASE
+	add rsp, 28h
 	pop r12 rbx
-	leave
 	jmp [VirtualFree]
 endp
 
@@ -198,8 +212,6 @@ proc ThreadProc, lpParam
 	mov [comIface.handle], rax
 	mov rax, [rcx+16]
 	mov [o.hEvent], rax
-	sub rsp, 20h
-	proc_noprologue
 	@call [SetCommMask]([comIface.handle], EV_RXCHAR)
 	@@:
 		@call [WaitCommEvent]([comIface.handle], addr flags, addr o)
@@ -208,6 +220,7 @@ proc ThreadProc, lpParam
 		test rax, rax
 		jnz .noErr
 			@call [SendMessageA](.hWnd, WM_COMM, 0, 0)
+			jmp $
 		.noErr:
 		cmp [comIface.comstat.cbInQue], 0
 		je .noPrint
@@ -223,8 +236,8 @@ proc ThreadProc, lpParam
 		.noPrint:
 	jmp @b
 	restore .hWnd
-	proc_resprologue
 endp
+proc_resprologue
 
 proc dForm2_Init uses rbx, formLp, paramsLp
 	virtObj .form:arg dForm2 at rbx
@@ -357,6 +370,8 @@ proc dForm2_Init uses rbx, formLp, paramsLp
 	@call [CreateThread](NULL, NULL, ThreadProc, .threadParams, 0, 0)
 	mov [.form.thread], rax
 	@call [SetThreadPriority](rax, THREAD_PRIORITY_TIME_CRITICAL)
+	@call WND:setTimer([.form.hWnd], 1, 100, NULL)
+	mov [.form.timer], rax
 	.return:
 	endf
 	ret
