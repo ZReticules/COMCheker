@@ -1,4 +1,4 @@
-format pe64 Console
+format pe64 gui
 
 entry main
 
@@ -8,7 +8,6 @@ include "TOOLS\TOOLS.INC"
 include_once "TOOLS\WINUSER\Winuser.inc"
 include_once "TOOLS\COMPort\COMInfo.inc"
 include_once "COMIFace.inc"
-include_once "TOOLS\cstdio.inc"
 include "customControls.inc"
 include "dForm2.asm"
 include "dForm1.asm"
