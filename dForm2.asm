@@ -186,6 +186,7 @@ proc dForm2_ComIn uses rbx r12, formLp, paramsLp
 	cmp [.params.lparam], 0
 	jne .noError
 		@call .form->close()
+		ret
 	.noError:
 	test [.form.outStatus], 1
 	jnz .noAdd
@@ -237,7 +238,6 @@ proc ThreadProc, lpParam
 	jmp @b
 	restore .hWnd
 endp
-proc_resprologue
 
 proc dForm2_Init uses rbx, formLp, paramsLp
 	virtObj .form:arg dForm2 at rbx
@@ -247,7 +247,6 @@ proc dForm2_Init uses rbx, formLp, paramsLp
 		._bszNums 	dd ?
 	endl
 	mov rbx, rcx
-	frame
 	@call .form.comInfo->getPortName(addr strBuf, 1024)
 	@call .form.comIface->openA(addr conPref)
 	test rax, rax
@@ -374,7 +373,6 @@ proc dForm2_Init uses rbx, formLp, paramsLp
 	@call WND:setTimer([.form.hWnd], 1, 100, NULL)
 	mov [.form.timer], rax
 	.return:
-	endf
 	ret
 
 	.threadParams:
@@ -382,5 +380,6 @@ proc dForm2_Init uses rbx, formLp, paramsLp
 		.cHandle 	dq ?
 		.event  	dq ?
 endp
+proc_resprologue
 
 ShblDialog dForm2, 0, 0, 255, 200, NONE, WS_VISIBLE or WS_CAPTION or WS_SYSMENU or WS_MINIMIZEBOX or DS_CENTER

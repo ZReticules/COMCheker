@@ -49,7 +49,6 @@ proc btPort_clicked uses rbx, formLp, paramsLp, controlLp
 		@call WND:msgBox([.form.hWnd], "COM-порт не выбран!", NULL, NULL)
 		ret
 	.issetPort:
-	.return:
 	lea rcx, [.form.subForm]
 	xor rdx, rdx
 	sub rsp, 20h
