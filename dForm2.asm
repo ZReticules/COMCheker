@@ -9,7 +9,7 @@ struct dForm2 DIALOGFORM
 	comIface			COMIface
 	baudRates			dd 75, 110, 134, 150, 300, 600, 1200, 1800, 2400, 4800, 7200, 9600, 14400, 19200, 38400, 57600, 115200, 128000
 	thread				dq ?
-	event				dq ?
+	inEvent				dq ?
 	oldClose 			dq ?
 	outStatus			db 0
 	o 					OVERLAPPED
@@ -124,6 +124,7 @@ proc dform2_btOutData_clicked uses rbx r12, formLp, paramsLp
 	virtObj .form:arg dForm2 at rbx
 	.dynMem equ r12
 	local textLen:QWORD
+	mov rbx, rcx
 	@call .form.edOut->getTextLen()
 	mov [textLen], rax
 	inc [textLen]
@@ -165,7 +166,7 @@ proc dForm2_close uses rbx r12, this, paramsLp
 	mov rbx, rcx
 	mov .params, rdx
 	@call [TerminateThread]([.form.thread], 0)
-	@call [CloseHandle]([.form.event])
+	@call [CloseHandle]([.form.inEvent])
 	@call .form.comIface->close()
 	@call [SetCommMask]([.form.comIface.handle], 0)
 	virtObj .formJump:arg dForm2
@@ -202,8 +203,8 @@ proc ThreadProc, lpParam
 	locals
 		 comIface 	COMIface
 		 lenMem 	dd ?
-		 o OVERLAPPED
-		 flags dq 0
+		 o 			OVERLAPPED
+		 flags 		dq 0
 	endl
 	.hWnd equ rbx
 	mov [lpParam], rcx
@@ -212,7 +213,6 @@ proc ThreadProc, lpParam
 	mov [comIface.handle], rax
 	mov rax, [rcx+16]
 	mov [o.hEvent], rax
-	@call [SetCommMask]([comIface.handle], EV_RXCHAR)
 	@@:
 		@call [WaitCommEvent]([comIface.handle], addr flags, addr o)
 		@call [WaitForSingleObject]([o.hEvent], -1)
@@ -364,9 +364,10 @@ proc dForm2_Init uses rbx, formLp, paramsLp
 	mov rax, [.form.comIface.handle]
 	mov [.cHandle], rax
 	@call [CreateEventA](NULL, 1, 0, NULL)
-	mov [.form.event], rax
+	mov [.form.inEvent], rax
 	mov [.event], rax
-	mov [.form.o], rax
+	mov [.form.o.hEvent], rax
+	@call [SetCommMask]([.form.comIface.handle], EV_RXCHAR or EV_TXEMPTY)
 	@call [CreateThread](NULL, NULL, ThreadProc, .threadParams, 0, 0)
 	mov [.form.thread], rax
 	@call [SetThreadPriority](rax, THREAD_PRIORITY_TIME_CRITICAL)

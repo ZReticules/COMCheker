@@ -1,4 +1,4 @@
-format pe64 gui
+format pe64 GUI
 
 entry main
 

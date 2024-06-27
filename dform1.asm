@@ -29,8 +29,9 @@ struct dForm1 DIALOGFORM
 		"", dForm1.gpDesc._x+5, dForm1.edPhysName._ry, 100, 8, WS_VISIBLE
 	control edService 	editRo, 	<WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm1.gpDesc._x+5, dForm1.stService._ry, 105, 10, WS_VISIBLE or ES_READONLY, WS_EX_STATICEDGE
-	timer 				dq ?
 	form subForm 		dForm2
+	timer 				dq ?
+	oldClose 			dq ?
 ends
 
 proc_noprologue
@@ -46,7 +47,7 @@ proc btPort_clicked uses rbx, formLp, paramsLp, controlLp
 	test rax, rax
 	jnz .issetPort
 		@call WND:msgBox([.form.hWnd], "COM-порт не выбран!", NULL, NULL)
-		jmp .return
+		ret
 	.issetPort:
 	.return:
 	lea rcx, [.form.subForm]
@@ -86,6 +87,20 @@ proc comboChanged uses rbx, formLp, paramsLp, controlLp
 	ret
 endp
 
+proc dForm1_close, this, paramsLp
+	virtObj .form:arg dForm1
+	cmp [.form.subForm.hWnd], NULL
+	je .noActiveForm
+		mov [this], rcx
+		mov [paramsLp], rdx
+		@call .form.subForm->close()
+		mov rcx, [this]
+		mov rdx, [paramsLp]
+	.noActiveForm:
+	add rsp, 28h
+	jmp [.form.oldClose]
+endp
+
 proc dForm1_Init uses rbx rsi, formLp, paramsLp
 	virtObj .form:arg dForm1 at rbx
 	locals 
@@ -103,6 +118,9 @@ proc dForm1_Init uses rbx rsi, formLp, paramsLp
 	@call .form->setCornerType(DWMWCP.DONOTROUND)
 	@call .form->setBgColor(WND.darkThemeColor)
 	@call .form->setCaptionColor(WND.darkThemeColor)
+	mov rax, [.form.WM_CLOSE]
+	mov [.form.oldClose], rax
+	mov [.form.WM_CLOSE], dForm1_close
 	@call .form.stGpPort->setText("Порт")
 	@call .form.stGpPort->setBgColor(WND.darkThemeColor)
 	@call .form.cbPort->initSubControl()
