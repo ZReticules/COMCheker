@@ -1,9 +1,11 @@
-WM_COMM = WM_USER+5
+WM_COMM 			= WM_USER+5
+WM_BRODACASTCLOSE	= WM_USER+4ch
 
 struct dForm2 DIALOGFORM
 	WM_INITDIALOG 		event dForm2_Init
 	WM_COMM				event dForm2_ComIn
-	WM_TIMER 			event dform2_Timer
+	WM_TIMER 			event dForm2_Timer
+	WM_BRODACASTCLOSE	event dForm2_bClose
 	hIcon				dq ?
 	comInfo 			COMInfo
 	comIface			COMIface
@@ -35,7 +37,7 @@ struct dForm2 DIALOGFORM
 	control cbStopBits 	comboBox, <NONE, NONE>,\
 	 	"", dForm2.stStopBits._x, dForm2.stStopBits._ry, 55, 12, CBS_DROPDOWNLIST or WS_VISIBLE or WS_TABSTOP
  	control btSvParams	button, <NONE, NONE, dform2_btSvParams_clicked>,\
- 		"", dForm2.cbStopBits._x, dForm2.cbStopBits._ry+5, 55, 12, WS_VISIBLE
+ 		"", dForm2.cbStopBits._x, dForm2.cbStopBits._ry+5, 55, 12, WS_VISIBLE or WS_TABSTOP
 	control gpIn		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpStngs._x, dForm2.gpStngs._ry+5, dForm2.gpStngs._cx, dForm2.btClearIn._ry-dForm2.gpIn._y+5, WS_VISIBLE or BS_GROUPBOX
 	control stGpIn	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -43,9 +45,9 @@ struct dForm2 DIALOGFORM
 	control edIn		editRo, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpIn._x+5, dForm2.gpIn._y+5, dForm2.gpIn._cx-10, 60, WS_VISIBLE or ES_READONLY or ES_MULTILINE or WS_VSCROLL, WS_EX_STATICEDGE
  	control btPauseIn	button, <NONE, NONE, dform2_btPauseIn_clicked>,\
- 		"", dForm2.gpIn._x+5, dForm2.edIn._ry+5, 55, 12, WS_VISIBLE
+ 		"", dForm2.gpIn._x+5, dForm2.edIn._ry+5, 55, 12, WS_VISIBLE or WS_TABSTOP
  	control btClearIn	button, <NONE, NONE, dform2_btClearIn_clicked>,\
- 		"", dForm2.edIn._rx-dForm2.btClearIn._cx, dForm2.edIn._ry+5, 55, 12, WS_VISIBLE
+ 		"", dForm2.edIn._rx-dForm2.btClearIn._cx, dForm2.edIn._ry+5, 55, 12, WS_VISIBLE or WS_TABSTOP
 	control gpOut		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpIn._x, dForm2.gpIn._ry+5, dForm2.btOutData._rx-dForm2.edOut._x+10, dForm2.edOut._cy+10, WS_VISIBLE or BS_GROUPBOX
 	control stGpOut	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -53,11 +55,11 @@ struct dForm2 DIALOGFORM
 	control edOut		EDIT, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpOut._x+5, dForm2.gpOut._y+5, dForm2.cbParity._rx-dForm2.edOut._x, 29, WS_VISIBLE or ES_MULTILINE or WS_VSCROLL or ES_WANTRETURN, WS_EX_STATICEDGE
  	control btOutData	button, <NONE, NONE, dform2_btOutData_clicked>,\
- 		"", dForm2.edOut._rx+5, dForm2.gpOut._y+5, 55, 12, WS_VISIBLE
+ 		"", dForm2.edOut._rx+5, dForm2.gpOut._y+5, 55, 12, WS_VISIBLE or WS_TABSTOP
 ends
 
 proc_noprologue
-proc dform2_Timer, formLp, paramsLp
+proc dForm2_Timer, formLp, paramsLp
 	virtObj .form:arg dForm2
 	local cxBuf:QWORD
 	mov [cxBuf], rcx
@@ -70,6 +72,10 @@ proc dform2_Timer, formLp, paramsLp
 	.noErr:
 	ret
 endp
+
+dForm2_bClose:
+	virtObj .form:arg dForm2
+	jmp dForm2.Table.close
 
 proc dform2_cbBaud_changed, formLp, paramsLp, controlLp
 	virtObj .form:arg dForm2

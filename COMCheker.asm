@@ -31,6 +31,7 @@ section ".code" readable writeable executable
 	form myForm dForm1
 	
 	proc_noprologue
+
 	proc main
 		@call myForm->startNM(NULL)
 		.msgLoop:

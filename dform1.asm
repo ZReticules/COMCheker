@@ -5,7 +5,7 @@ struct dForm1 DIALOGFORM
 		"", 5, 5, 115, dForm1.btShowPort._ry-dForm1.gpPort._y+5, WS_VISIBLE or BS_GROUPBOX
 	control stGpPort	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm1.gpPort._rx-dForm1.stGpPort._cx-5, dForm1.gpPort._y-4, 18, 10, WS_VISIBLE or ES_RIGHT
-	control cbPort 		comboBox, <NONE, NONE, comboChanged>,\
+	control cbPort 		comboBox, <NONE, NONE>,\
 		"", dForm1.gpPort._x+5, dForm1.gpPort._y+5, 50, 12, CBS_DROPDOWNLIST or WS_VISIBLE or CBS_SORT or WS_TABSTOP or BS_DEFPUSHBUTTON
 	control btShowPort	button, <NONE, NONE, btPort_clicked>,\
 		"", dForm1.cbPort._rx+5, dForm1.gpPort._y+5, 50, 12, WS_VISIBLE or WS_GROUP or WS_TABSTOP
@@ -49,8 +49,8 @@ proc btPort_clicked uses rbx, formLp, paramsLp, controlLp
 		@call WND:msgBox([.form.hWnd], "COM-порт не выбран!", NULL, NULL)
 		ret
 	.issetPort:
-	lea rcx, [.form.subForm]
 	xor rdx, rdx
+	lea rcx, [.form.subForm]
 	sub rsp, 20h
 	pop rbx
 	jmp dForm1.Table.startNM
@@ -92,7 +92,8 @@ proc dForm1_close, this, paramsLp
 	je .noActiveForm
 		mov [this], rcx
 		mov [paramsLp], rdx
-		@call .form.subForm->close()
+		; @call .form.subForm->close()
+		@call [SendMessageA](HWND_BROADCAST, WM_BRODACASTCLOSE, 0, 0)
 		mov rcx, [this]
 		mov rdx, [paramsLp]
 	.noActiveForm:
