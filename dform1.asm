@@ -6,9 +6,9 @@ struct dForm1 DIALOGFORM
 	control stGpPort	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm1.gpPort._rx-dForm1.stGpPort._cx-5, dForm1.gpPort._y-4, 18, 10, WS_VISIBLE or ES_RIGHT
 	control cbPort 		comboBox, <NONE, NONE>,\
-		"", dForm1.gpPort._x+5, dForm1.gpPort._y+5, 50, 12, CBS_DROPDOWNLIST or WS_VISIBLE or CBS_SORT or WS_TABSTOP or BS_DEFPUSHBUTTON
+		"", dForm1.gpPort._x+5, dForm1.gpPort._y+5, 50, 12, CBS_DROPDOWNLIST or WS_VISIBLE or CBS_SORT or WS_TABSTOP
 	control btShowPort	button, <NONE, NONE, btPort_clicked>,\
-		"", dForm1.cbPort._rx+5, dForm1.gpPort._y+5, 50, 12, WS_VISIBLE or WS_GROUP or WS_TABSTOP
+		"", dForm1.cbPort._rx+5, dForm1.gpPort._y+5, 50, 12, WS_VISIBLE or WS_GROUP or WS_TABSTOP or BS_DEFPUSHBUTTON
 	control gpDesc		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm1.gpPort._x, dForm1.gpPort._ry+5, 115, dForm1.edService._ry-dForm1.gpDesc._y+5, WS_VISIBLE or BS_GROUPBOX
 	control stGpDesc	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\

@@ -17,7 +17,7 @@ struct dForm2 DIALOGFORM
 	o 					OVERLAPPED
 	timer 				dq ?
 	control gpStngs		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
-		"", 5, 5, dForm2.btSvParams._rx-dForm2.gpStngs._x+5, dForm2.btSvParams._ry-dForm2.gpStngs._y+5, WS_VISIBLE or BS_GROUPBOX
+		"", 5, 5, dForm2.btSvParams._rx-dForm2.gpStngs._x+5, dForm2.btSvParams._ry-dForm2.gpStngs._y+5, WS_VISIBLE or BS_GROUPBOX or WS_GROUP
 	control stGpStngs	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpStngs._rx-dForm2.stGpStngs._cx-5, dForm2.gpStngs._y-4, 38, 10, WS_VISIBLE or ES_RIGHT
 	control stBaud		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -37,9 +37,9 @@ struct dForm2 DIALOGFORM
 	control cbStopBits 	comboBox, <NONE, NONE>,\
 	 	"", dForm2.stStopBits._x, dForm2.stStopBits._ry, 55, 12, CBS_DROPDOWNLIST or WS_VISIBLE or WS_TABSTOP
  	control btSvParams	button, <NONE, NONE, dform2_btSvParams_clicked>,\
- 		"", dForm2.cbStopBits._x, dForm2.cbStopBits._ry+5, 55, 12, WS_VISIBLE or WS_TABSTOP
+ 		"", dForm2.cbStopBits._x, dForm2.cbStopBits._ry+5, 55, 12, WS_VISIBLE or WS_TABSTOP or BS_DEFPUSHBUTTON
 	control gpIn		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
-		"", dForm2.gpStngs._x, dForm2.gpStngs._ry+5, dForm2.gpStngs._cx, dForm2.btClearIn._ry-dForm2.gpIn._y+5, WS_VISIBLE or BS_GROUPBOX
+		"", dForm2.gpStngs._x, dForm2.gpStngs._ry+5, dForm2.gpStngs._cx, dForm2.btClearIn._ry-dForm2.gpIn._y+5, WS_VISIBLE or BS_GROUPBOX or WS_GROUP
 	control stGpIn	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpIn._rx-dForm2.stGpIn._cx-5, dForm2.gpIn._y-4, 23, 10, WS_VISIBLE or ES_RIGHT
 	control edIn		editRo, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -49,7 +49,7 @@ struct dForm2 DIALOGFORM
  	control btClearIn	button, <NONE, NONE, dform2_btClearIn_clicked>,\
  		"", dForm2.edIn._rx-dForm2.btClearIn._cx, dForm2.edIn._ry+5, 55, 12, WS_VISIBLE or WS_TABSTOP
 	control gpOut		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
-		"", dForm2.gpIn._x, dForm2.gpIn._ry+5, dForm2.btOutData._rx-dForm2.edOut._x+10, dForm2.edOut._cy+10, WS_VISIBLE or BS_GROUPBOX
+		"", dForm2.gpIn._x, dForm2.gpIn._ry+5, dForm2.btOutData._rx-dForm2.edOut._x+10, dForm2.edOut._cy+10, WS_VISIBLE or BS_GROUPBOX or WS_GROUP
 	control stGpOut	STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
 		"", dForm2.gpOut._rx-dForm2.stGpOut._cx-5, dForm2.gpOut._y-4, 18, 10, WS_VISIBLE or ES_RIGHT
 	control edOut		EDIT, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -123,6 +123,7 @@ proc dform2_btSvParams_clicked uses rbx, formLp, paramsLp
 	virtObj .form:arg dForm2 at rbx
 	mov rbx, rcx
 	@call .form.comIface->setParams()
+	@call .form.comIface->reset()
 	ret
 endp
 

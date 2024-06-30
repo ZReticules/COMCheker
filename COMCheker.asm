@@ -45,7 +45,7 @@ section ".code" readable writeable executable
 		directory 	RT_MANIFEST, manifests
 
 		resource 	manifests,\ 
-	           1, LANG_ENGLISH or SUBLANG_DEFAULT, manifest
+			1, LANG_ENGLISH or SUBLANG_DEFAULT, manifest
 
 		resdata manifest
 			db 	'<assembly xmlns="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">'
