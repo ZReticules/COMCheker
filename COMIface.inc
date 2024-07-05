@@ -1,7 +1,7 @@
 struct DCB
 	DCBlength 	dd ?
-	BaudRate 	dd ?
-	flags 		dd ?
+	BaudRate 		dd ?
+	flags 			dd ?
 	; DWORD fBinary:1; // binary mode, no EOF check
 	; DWORD fParity:1; // enable parity checking
 	; DWORD fOutxCtsFlow:1; // CTS output flow control
@@ -16,17 +16,17 @@ struct DCB
 	; DWORD fRtsControl:2; // RTS flow control
 	; DWORD fAbortOnError:1; // abort reads/writes on error
 	; DWORD fDummy2:17; // reserved
-	wReserved	dw ?
-	XonLim		dw ?
-	XoffLim		dw ?
-	ByteSize	db ?
-	Parity		db ?
-	StopBits	db ?
-	XonChar		db ?
-	XoffChar	db ?
-	ErrorChar	db ?
-	EofChar		db ?
-	EvtChar		db ?
+	wReserved		dw ?
+	XonLim			dw ?
+	XoffLim			dw ?
+	ByteSize		db ?
+	Parity			db ?
+	StopBits		db ?
+	XonChar			db ?
+	XoffChar		db ?
+	ErrorChar		db ?
+	EofChar			db ?
+	EvtChar			db ?
 	wReserved1	dw ?
 ends
 

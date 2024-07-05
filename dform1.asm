@@ -1,4 +1,6 @@
 struct dForm1 DIALOGFORM
+	const _cx 			= 125
+	const _cy  			= 137
 	WM_INITDIALOG 		event dForm1_Init
 	WM_TIMER 			event dForm1_Timer
 	control gpPort		STATIC, <WND.darkThemeColor, 0xFFFFFF>,\
@@ -92,7 +94,6 @@ proc dForm1_close, this, paramsLp
 	je .noActiveForm
 		mov [this], rcx
 		mov [paramsLp], rdx
-		; @call .form.subForm->close()
 		@call [SendMessageA](HWND_BROADCAST, WM_BRODACASTCLOSE, 0, 0)
 		mov rcx, [this]
 		mov rdx, [paramsLp]
@@ -111,7 +112,6 @@ proc dForm1_Init uses rbx rsi, formLp, paramsLp
 		winHDC dq ?
 	endl
 	mov rbx, rcx
-	@call .form->setText("COMCheker")
 	@call WND:getStockIcon(SIID.DRIVERAM)
 	mov [.form.subForm.hIcon], rax
 	@call .form->setIcon(rax)
@@ -212,4 +212,4 @@ endp
 
 proc_noprologue
 
-ShblDialog dForm1, 0, 0, 125, 137, NONE, WS_VISIBLE or WS_CAPTION or WS_SYSMENU or WS_MINIMIZEBOX or DS_CENTER
+ShblDialog dForm1, "COMCheker", WS_VISIBLE or WS_CAPTION or WS_SYSMENU or WS_MINIMIZEBOX or DS_CENTER

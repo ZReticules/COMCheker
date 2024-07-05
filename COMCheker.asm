@@ -12,18 +12,18 @@ include "customControls.inc"
 include "dForm2.asm"
 include "dForm1.asm"
 
-	importlib kernel32,\
-		CreateFileA,\
-		CloseHandle,\
-		GetLastError,\
-		CreateThread,\
-		TerminateThread,\
-		SetCommMask,\
-		CreateEventA,\
-		SetThreadPriority,\
-		WaitForSingleObject,\
-		VirtualAlloc,\
-		VirtualFree
+importlib kernel32,\
+	CreateFileA,\
+	CloseHandle,\
+	GetLastError,\
+	CreateThread,\
+	TerminateThread,\
+	SetCommMask,\
+	CreateEventA,\
+	SetThreadPriority,\
+	WaitForSingleObject,\
+	VirtualAlloc,\
+	VirtualFree
 
 
 section ".code" readable writeable executable

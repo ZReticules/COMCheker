@@ -2,6 +2,8 @@ WM_COMM 			= WM_USER+5
 WM_BRODACASTCLOSE	= WM_USER+4ch
 
 struct dForm2 DIALOGFORM
+	const _cx 			= 255
+	const _cy  			= 193
 	WM_INITDIALOG 		event dForm2_Init
 	WM_COMM				event dForm2_ComIn
 	WM_TIMER 			event dForm2_Timer
@@ -389,4 +391,4 @@ proc dForm2_Init uses rbx, formLp, paramsLp
 endp
 proc_resprologue
 
-ShblDialog dForm2, 0, 0, 255, 200, NONE, WS_VISIBLE or WS_CAPTION or WS_SYSMENU or WS_MINIMIZEBOX or DS_CENTER
+ShblDialog dForm2, "", WS_VISIBLE or WS_CAPTION or WS_SYSMENU or WS_MINIMIZEBOX or DS_CENTER
