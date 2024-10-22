@@ -31,9 +31,8 @@ proc COMIface.openA uses rbx r12, this, portStrLp
 	.portStrLp equ r12
 	virtObj .this:arg COMIface at rbx
 	mov rbx, rcx
-	mov rcx, rdx
 	mov .portStrLp, rdx
-	@call [CreateFileA](rcx, GENERIC_READ or GENERIC_WRITE, NULL, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL)
+	@call [CreateFileA](.portStrLp, GENERIC_READ or GENERIC_WRITE, NULL, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL)
 	cmp rax, INVALID_HANDLE_VALUE
 	jne @f
 		mov rax, 0
@@ -41,34 +40,14 @@ proc COMIface.openA uses rbx r12, this, portStrLp
 		jmp .return
 	@@:
 	mov [.this.handle], rax
-	@call [atoi](addr .portStrLp+7)
+	mov eax, 7
+	mov edx, 3
+	cmp dword[.portStrLp], "\\.\"
+	cmove edx, eax
+	@call [atoi](addr .portStrLp+rax)
 	mov [.this.portNum], eax
 	.return: ret
 endp
-
-if used COMIface.close
-	COMIface.close:;, this
-		virtObj .this:arg COMIface
-		mov rcx, [.this.handle]
-		jmp [CloseHandle]
-end if
-
-if used COMIface.updStat
-	COMIface.updStat:;, this
-		virtObj .this:arg COMIface
-		lea r8, [.this.comstat]
-		xor rdx, rdx
-		mov rcx, [.this.handle]
-		jmp [ClearCommError];([.this.handle], NULL, r8)
-end if
-
-if used COMIface.updStat
-	COMIface.reset:;, this
-		virtObj .this:arg COMIface
-		mov edx, PURGE_RXCLEAR or PURGE_TXCLEAR
-		mov rcx, [.this.handle]
-		jmp [PurgeComm];([.this.handle], PURGE_RXCLEAR or PURGE_TXCLEAR)
-end if
 
 proc COMIface.read, this, bufLp, cBytes, overlappedLp
 	virtObj .this:arg COMIface
@@ -87,37 +66,6 @@ proc COMIface.write, this, bufLp, cBytes, overlappedLp
 	mov rax, [writeLen]
 	ret
 endp
-
-if used COMIface.getParams
-	COMIface.getParams:;, this
-		virtObj .this:arg COMIface
-		lea rdx, [.this.dcb]
-		mov rcx, [.this.handle]
-		jmp [GetCommState];([.this.handle], [.this.dcb])
-end if
-
-if used COMIface.setParams
-	COMIface.setParams:;, this
-		virtObj .this:arg COMIface
-		lea rdx, [.this.dcb]
-		mov rcx, [.this.handle]
-		jmp [SetCommState];([.this.handle], [.this.dcb])
-end if
-
-if used COMIface.setTimeouts
-	COMIface.setTimeouts:;, this
-		virtObj .this:arg COMIface
-		lea rdx, [.this.timeouts]
-		mov rcx, [.this.handle]
-		jmp [SetCommTimeouts];([.this.handle], [.this.timeouts])
-end if
-
-if used COMIface.setup
-	COMIface.setup:;, InQueue, OutQueue
-		virtObj .this:arg COMIface
-		mov rcx, [.this.handle]
-		jmp [SetupComm];([.this.handle], rdx, r8)
-end if
 
 ; importlib Advapi32,\
 ; 	RegOpenKeyExA,\
